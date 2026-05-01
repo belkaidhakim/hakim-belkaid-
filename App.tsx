@@ -26,7 +26,7 @@ const ResultIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
 );
 
-const TrophyIcon = ({ color = "currentColor" }) => (
+const TrophyIcon = ({ color = "currentColor" }: { color?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
 );
 
@@ -104,13 +104,13 @@ export const App: React.FC = () => {
     const scores: Record<string, { total: number, gold: number, silver: number, bronze: number }> = {};
     const pointsScale = [20, 17, 16, 15, 14, 13, 12, 11, 9, 7, 6, 5, 4, 3, 2, 1];
 
-    competition.entries.forEach(entry => {
+    competition.entries.forEach((entry: Entry) => {
       if (entry.rank && entry.rank <= pointsScale.length) {
         let clubName = '';
         if (entry.isRelay && entry.relayClub) {
           clubName = entry.relayClub;
         } else {
-          const swimmer = competition.swimmers.find(s => s.id === entry.swimmerId);
+          const swimmer = competition.swimmers.find((s: Swimmer) => s.id === entry.swimmerId);
           if (swimmer) clubName = swimmer.club;
         }
 
@@ -138,18 +138,18 @@ export const App: React.FC = () => {
   // Global Dashboard Statistics
   const dashboardStats = useMemo(() => {
     const totalSwimmers = competition.swimmers.length;
-    const males = competition.swimmers.filter(s => s.gender === 'M').length;
-    const females = competition.swimmers.filter(s => s.gender === 'F').length;
+    const males = competition.swimmers.filter((s: Swimmer) => s.gender === 'M').length;
+    const females = competition.swimmers.filter((s: Swimmer) => s.gender === 'F').length;
 
-    const clubBreakdown = competition.clubs.map(club => {
-      const swimmers = competition.swimmers.filter(s => s.club === club);
+    const clubBreakdown = competition.clubs.map((club: string) => {
+      const swimmers = competition.swimmers.filter((s: Swimmer) => s.club === club);
       return {
         name: club,
         total: swimmers.length,
-        m: swimmers.filter(s => s.gender === 'M').length,
-        f: swimmers.filter(s => s.gender === 'F').length
+        m: swimmers.filter((s: Swimmer) => s.gender === 'M').length,
+        f: swimmers.filter((s: Swimmer) => s.gender === 'F').length
       };
-    }).sort((a, b) => b.total - a.total);
+    }).sort((a: any, b: any) => b.total - a.total);
 
     return { totalSwimmers, males, females, clubBreakdown };
   }, [competition.swimmers, competition.clubs]);
@@ -189,15 +189,15 @@ export const App: React.FC = () => {
   };
 
   const autoSeedAll = useCallback(() => {
-    setCompetition(prev => {
+    setCompetition((prev: Competition) => {
       let updatedEntries = [...prev.entries];
       let hasChanges = false;
 
-      prev.events.forEach(event => {
-        const hasAssignments = updatedEntries.some(e => e.eventId === event.id && e.heat);
+      prev.events.forEach((event: CompetitionEvent) => {
+        const hasAssignments = updatedEntries.some((e: Entry) => e.eventId === event.id && e.heat);
         if (!hasAssignments) {
           const assignments = calculateInitialSeeding(event, updatedEntries, prev.poolSize);
-          assignments.forEach(assign => {
+          assignments.forEach((assign: any) => {
             const entryIndex = updatedEntries.findIndex(e => e.id === assign.entryId);
             if (entryIndex >= 0) {
               updatedEntries[entryIndex] = { ...updatedEntries[entryIndex], heat: assign.heat, lane: assign.lane };
@@ -256,7 +256,7 @@ export const App: React.FC = () => {
   }, [seededEvents, seedingFilterStroke, seedingFilterCategory, seedingFilterGender]);
 
   const filteredSwimmers = useMemo(() => {
-    return competition.swimmers.filter(s => {
+    return competition.swimmers.filter((s: Swimmer) => {
       const matchSearch = searchTerm === '' ||
         s.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.firstName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -274,14 +274,14 @@ export const App: React.FC = () => {
     const ms = parseTimeToMs(timeValue);
     const formatted = formatMsToTime(ms);
 
-    setCompetition(prev => {
-      let nextEntries = prev.entries.map(e => (e.id === entryId) ? { ...e, resultTime: formatted, resultTimeMs: ms === Infinity ? null : ms } : e);
-      const updatedEntry = nextEntries.find(e => e.id === entryId);
+    setCompetition((prev: Competition) => {
+      let nextEntries = prev.entries.map((e: Entry) => (e.id === entryId) ? { ...e, resultTime: formatted, resultTimeMs: ms === Infinity ? null : ms } : e);
+      const updatedEntry = nextEntries.find((e: Entry) => e.id === entryId);
       if (updatedEntry) {
         const eventId = updatedEntry.eventId;
-        const event = prev.events.find(ev => ev.id === eventId);
+        const event = prev.events.find((ev: CompetitionEvent) => ev.id === eventId);
         const pointsScale = [20, 17, 16, 15, 14, 13, 12, 11, 9, 7, 6, 5, 4, 3, 2, 1];
-        const sortedEntries = nextEntries.filter(e => e.eventId === eventId && e.resultTimeMs).sort((a, b) => (a.resultTimeMs || 0) - (b.resultTimeMs || 0));
+        const sortedEntries = nextEntries.filter((e: Entry) => e.eventId === eventId && e.resultTimeMs).sort((a: Entry, b: Entry) => (a.resultTimeMs || 0) - (b.resultTimeMs || 0));
         nextEntries = nextEntries.map(e => {
           if (e.eventId !== eventId) return e;
           const rankIdx = sortedEntries.findIndex(s => s.id === e.id);
@@ -390,12 +390,12 @@ export const App: React.FC = () => {
 
   const handleExportResultsExcel = () => {
     const data: any[] = [];
-    competition.events.forEach((event, idx) => {
-      const eventEntries = competition.entries.filter(e => e.eventId === event.id && e.resultTimeMs).sort((a, b) => (a.resultTimeMs || 0) - (b.resultTimeMs || 0));
+    competition.events.forEach((event: CompetitionEvent, idx: number) => {
+      const eventEntries = competition.entries.filter((e: Entry) => e.eventId === event.id && e.resultTimeMs).sort((a: Entry, b: Entry) => (a.resultTimeMs || 0) - (b.resultTimeMs || 0));
       if (eventEntries.length > 0) {
         data.push({ 'Rang': `EPREUVE ${idx + 1}`, 'Epreuve': `${event.distance}m ${event.stroke} - ${event.gender}` });
-        eventEntries.forEach((e, rIdx) => {
-          const s = competition.swimmers.find(sw => sw.id === e.swimmerId);
+        eventEntries.forEach((e: Entry, rIdx: number) => {
+          const s = competition.swimmers.find((sw: Swimmer) => sw.id === e.swimmerId);
           data.push({ 'Rang': rIdx + 1, 'Nom': s?.lastName, 'Prénom': s?.firstName, 'Club': s?.club, 'Temps Eng.': e.entryTime, 'Temps Réalisé': e.resultTime });
         });
         data.push({});
@@ -467,7 +467,7 @@ export const App: React.FC = () => {
       const birthYear = parseInt(row[keyAnnee || ''] || "2010");
 
       // Duplicate check (normalized)
-      const isDuplicate = competition.swimmers.some(s =>
+      const isDuplicate = competition.swimmers.some((s: Swimmer) =>
         s.lastName.toUpperCase() === lastName &&
         s.firstName.toLowerCase() === firstName.toLowerCase() &&
         s.birthYear === birthYear
@@ -524,7 +524,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    setCompetition(prev => ({
+    setCompetition((prev: Competition) => ({
       ...prev,
       clubs: Array.from(newClubsSet),
       swimmers: [...prev.swimmers, ...newSwimmers],
@@ -574,30 +574,30 @@ export const App: React.FC = () => {
   const moveHeat = (eventId: string, heatNumber: number, direction: 'up' | 'down') => {
     const targetHeat = direction === 'up' ? heatNumber - 1 : heatNumber + 1;
     if (targetHeat < 1) return;
-    setCompetition(prev => ({ ...prev, entries: prev.entries.map(e => (e.eventId === eventId && e.heat === heatNumber) ? { ...e, heat: targetHeat } : (e.eventId === eventId && e.heat === targetHeat) ? { ...e, heat: heatNumber } : e) }));
+    setCompetition((prev: Competition) => ({ ...prev, entries: prev.entries.map((e: Entry) => (e.eventId === eventId && e.heat === heatNumber) ? { ...e, heat: targetHeat } : (e.eventId === eventId && e.heat === targetHeat) ? { ...e, heat: heatNumber } : e) }));
   };
 
   const reverseHeats = (eventId: string) => {
-    setCompetition(prev => {
-      const eventEntries = prev.entries.filter(e => e.eventId === eventId && typeof e.heat === 'number');
+    setCompetition((prev: Competition) => {
+      const eventEntries = prev.entries.filter((e: Entry) => e.eventId === eventId && typeof e.heat === 'number');
       if (eventEntries.length === 0) return prev;
       // Fixed type inference by specifying generics for Set and Array.from
-      const heatNums: number[] = Array.from<number>(new Set(eventEntries.map(e => e.heat as number))).sort((a, b) => a - b);
+      const heatNums: number[] = Array.from<number>(new Set(eventEntries.map((e: Entry) => e.heat as number))).sort((a, b) => a - b);
       const maxHeat = Math.max(...heatNums);
       const minHeat = Math.min(...heatNums);
-      return { ...prev, entries: prev.entries.map(e => (e.eventId === eventId && typeof e.heat === 'number') ? { ...e, heat: maxHeat + minHeat - (e.heat as number) } : e) };
+      return { ...prev, entries: prev.entries.map((e: Entry) => (e.eventId === eventId && typeof e.heat === 'number') ? { ...e, heat: maxHeat + minHeat - (e.heat as number) } : e) };
     });
   };
 
   const handleAddHeat = (eventId: string, currentHeatsCount: number) => {
-    setMinHeats(prev => ({
+    setMinHeats((prev: Record<string, number>) => ({
       ...prev,
       [eventId]: Math.max((prev[eventId] || currentHeatsCount) + 1, currentHeatsCount + 1)
     }));
   };
 
   const handleRemoveHeat = (eventId: string, currentHeatsCount: number) => {
-    setMinHeats(prev => {
+    setMinHeats((prev: Record<string, number>) => {
       const current = prev[eventId] || currentHeatsCount;
       if (current <= 1) return prev;
       return { ...prev, [eventId]: current - 1 };
@@ -609,8 +609,8 @@ export const App: React.FC = () => {
 
     // Manual assignment from selected list
     if (selectedEntryId) {
-      setCompetition(prev => {
-        const nextEntries = prev.entries.map(e => {
+      setCompetition((prev: Competition) => {
+        const nextEntries = prev.entries.map((e: Entry) => {
           if (e.id === selectedEntryId) return { ...e, heat, lane };
           // If someone else was in this slot, unseed them
           if (e.eventId === eventId && e.heat === heat && e.lane === lane) return { ...e, heat: null, lane: null };
@@ -622,17 +622,17 @@ export const App: React.FC = () => {
       return;
     }
 
-    setSelectedSlot(prev => {
+    setSelectedSlot((prev: any) => {
       // If same slot clicked, deselect
       if (prev && prev.eventId === eventId && prev.heat === heat && prev.lane === lane) {
         return null;
       }
 
       if (prev && prev.eventId === eventId) {
-        setCompetition(comp => {
+        setCompetition((comp: Competition) => {
           const newEntries = [...comp.entries];
-          const srcIdx = newEntries.findIndex(e => e.eventId === prev.eventId && e.heat === prev.heat && e.lane === prev.lane);
-          const tgtIdx = newEntries.findIndex(e => e.eventId === eventId && e.heat === heat && e.lane === lane);
+          const srcIdx = newEntries.findIndex((e: Entry) => e.eventId === prev.eventId && e.heat === prev.heat && e.lane === prev.lane);
+          const tgtIdx = newEntries.findIndex((e: Entry) => e.eventId === eventId && e.heat === heat && e.lane === lane);
 
           if (srcIdx !== -1 && tgtIdx !== -1) {
             const tempH = newEntries[srcIdx].heat;
@@ -659,29 +659,29 @@ export const App: React.FC = () => {
   };
 
   const handleUnseedEntry = (entryId: string) => {
-    setCompetition(prev => ({
+    setCompetition((prev: Competition) => ({
       ...prev,
-      entries: prev.entries.map(e => e.id === entryId ? { ...e, heat: null, lane: null } : e)
+      entries: prev.entries.map((e: Entry) => e.id === entryId ? { ...e, heat: null, lane: null } : e)
     }));
   };
 
   const updateClubName = (oldName: string) => {
     const newName = window.prompt("Nouveau nom pour ce club :", oldName);
     if (!newName || oldName === newName) return;
-    setCompetition(prev => ({
+    setCompetition((prev: Competition) => ({
       ...prev,
-      clubs: prev.clubs.map(c => c === oldName ? newName : c),
-      swimmers: prev.swimmers.map(s => s.club === oldName ? { ...s, club: newName } : s)
+      clubs: prev.clubs.map((c: string) => c === oldName ? newName : c),
+      swimmers: prev.swimmers.map((s: Swimmer) => s.club === oldName ? { ...s, club: newName } : s)
     }));
   };
 
   const resetEventSeeding = (eventId: string) => {
     if (!window.confirm("Réinitialiser toutes les séries pour cette épreuve ?")) return;
-    setCompetition(prev => ({
+    setCompetition((prev: Competition) => ({
       ...prev,
-      entries: prev.entries.map(e => e.eventId === eventId ? { ...e, heat: null, lane: null } : e)
+      entries: prev.entries.map((e: Entry) => e.eventId === eventId ? { ...e, heat: null, lane: null } : e)
     }));
-    setMinHeats(prev => {
+    setMinHeats((prev: Record<string, number>) => {
       const next = { ...prev };
       delete next[eventId];
       return next;
@@ -689,9 +689,9 @@ export const App: React.FC = () => {
   };
   const handleUpdateEntryTime = (entryId: string, newTimeStr: string) => {
     const timeMs = parseTimeToMs(newTimeStr);
-    setCompetition(prev => ({
+    setCompetition((prev: Competition) => ({
       ...prev,
-      entries: prev.entries.map(e => e.id === entryId ? { ...e, entryTime: formatMsToTime(timeMs), entryTimeMs: timeMs } : e)
+      entries: prev.entries.map((e: Entry) => e.id === entryId ? { ...e, entryTime: formatMsToTime(timeMs), entryTimeMs: timeMs } : e)
     }));
   };
 
@@ -998,7 +998,7 @@ export const App: React.FC = () => {
                     type="text"
                     placeholder="Rechercher un club..."
                     value={clubSearchTerm}
-                    onChange={(e) => setClubSearchTerm(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setClubSearchTerm(e.target.value)}
                     className="bg-white/10 border border-white/10 rounded-2xl py-4 pl-12 pr-6 w-full xl:w-80 font-bold text-sm focus:bg-white/20 focus:border-blue-500 outline-none transition-all backdrop-blur-md"
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30"><Icons.Zap /></div>
@@ -1012,7 +1012,7 @@ export const App: React.FC = () => {
             {/* ADD CLUB QUICK FORM */}
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-6">
               <div className="text-sm font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">Nouveau Club :</div>
-              <form onSubmit={(e) => { e.preventDefault(); const input = (e.target as any).clubName; const val = input.value.trim(); if (val && !competition.clubs.includes(val)) setCompetition(prev => ({ ...prev, clubs: [...prev.clubs, val] })); input.value = ''; }} className="flex gap-3 w-full">
+              <form onSubmit={(e: React.FormEvent) => { e.preventDefault(); const input = (e.target as any).clubName; const val = input.value.trim(); if (val && !competition.clubs.includes(val)) setCompetition((prev: Competition) => ({ ...prev, clubs: [...prev.clubs, val] })); input.value = ''; }} className="flex gap-3 w-full">
                 <input name="clubName" type="text" placeholder="Entrez le nom du club..." className="flex-grow px-6 py-4 rounded-2xl border-2 border-slate-50 focus:border-blue-500 bg-slate-50 outline-none font-bold text-lg transition-all" required />
                 <button type="submit" className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black uppercase text-[10px] shadow-xl hover:bg-slate-800 transition-all flex items-center gap-2"><Icons.Plus /> Créer</button>
               </form>
@@ -1021,12 +1021,12 @@ export const App: React.FC = () => {
             {/* CLUBS GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {competition.clubs
-                .filter(c => c.toLowerCase().includes(clubSearchTerm.toLowerCase()))
+                .filter((c: string) => c.toLowerCase().includes(clubSearchTerm.toLowerCase()))
                 .sort()
-                .map(club => {
-                  const clubSwimmers = competition.swimmers.filter(s => s.club === club);
-                  const males = clubSwimmers.filter(s => s.gender === 'M').length;
-                  const females = clubSwimmers.filter(s => s.gender === 'F').length;
+                .map((club: string) => {
+                  const clubSwimmers = competition.swimmers.filter((s: Swimmer) => s.club === club);
+                  const males = clubSwimmers.filter((s: Swimmer) => s.gender === 'M').length;
+                  const females = clubSwimmers.filter((s: Swimmer) => s.gender === 'F').length;
 
                   return (
                     <div key={club} className="group bg-white rounded-[3rem] p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-blue-100 relative overflow-hidden flex flex-col h-full">
@@ -1037,7 +1037,7 @@ export const App: React.FC = () => {
                         </div>
                         <div className="flex gap-1">
                           <button onClick={() => updateClubName(club)} className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Icons.Edit /></button>
-                          <button onClick={() => { if (window.confirm(`Supprimer ${club} ?`)) setCompetition(prev => ({ ...prev, clubs: prev.clubs.filter(c => c !== club) })); }} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Icons.Trash /></button>
+                          <button onClick={() => { if (window.confirm(`Supprimer ${club} ?`)) setCompetition((prev: Competition) => ({ ...prev, clubs: prev.clubs.filter((c: string) => c !== club) })); }} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Icons.Trash /></button>
                         </div>
                       </div>
 
@@ -1058,7 +1058,7 @@ export const App: React.FC = () => {
                       <div className="flex-grow">
                         <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Aperçu de l'équipe</div>
                         <div className="flex flex-wrap gap-2">
-                          {clubSwimmers.slice(0, 12).map(s => (
+                          {clubSwimmers.slice(0, 12).map((s: Swimmer) => (
                             <button
                               key={s.id}
                               onClick={() => setSelectedSwimmerProfile(s)}
@@ -1124,18 +1124,18 @@ export const App: React.FC = () => {
                 <div className="flex bg-white/10 backdrop-blur-md p-1.5 rounded-2xl gap-2 w-full sm:w-auto border border-white/10">
                   <select
                     value={swimmerClubFilter}
-                    onChange={(e) => setSwimmerClubFilter(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSwimmerClubFilter(e.target.value)}
                     className="bg-transparent text-white px-4 py-2 font-black text-[10px] uppercase outline-none cursor-pointer border-r border-white/10"
                   >
                     <option value="Tous" className="bg-slate-800 text-white">Tous les Clubs</option>
-                    {competition.clubs.sort().map(c => <option key={c} value={c} className="bg-slate-800 text-white">{c}</option>)}
+                    {competition.clubs.sort().map((c: string) => <option key={c} value={c} className="bg-slate-800 text-white">{c}</option>)}
                   </select>
                   <div className="relative flex-grow sm:w-64">
                     <input
                       type="text"
                       placeholder="Rechercher un nom..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                       className="bg-transparent text-white px-4 py-2 w-full font-bold text-sm outline-none placeholder:text-white/30"
                     />
                   </div>
@@ -1164,15 +1164,15 @@ export const App: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {filteredSwimmers.map(swimmer => (
+                  {filteredSwimmers.map((swimmer: Swimmer) => (
                     <tr key={swimmer.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="py-4 pl-6 font-bold uppercase">{swimmer.lastName} <span className="capitalize">{swimmer.firstName}</span></td>
                       <td className="py-4 text-slate-600 font-medium">{swimmer.club}</td>
                       <td className="py-4 text-slate-600">{getCategoryByBirthYear(swimmer.birthYear)} ({swimmer.gender})</td>
                       <td className="py-4">
                         <div className="flex flex-wrap gap-1">
-                          {competition.entries.filter(e => e.swimmerId === swimmer.id).map(e => {
-                            const ev = competition.events.find(x => x.id === e.eventId);
+                          {competition.entries.filter((e: Entry) => e.swimmerId === swimmer.id).map((e: Entry) => {
+                            const ev = competition.events.find((x: CompetitionEvent) => x.id === e.eventId);
                             return ev ? <span key={e.id} className="text-[9px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded font-bold uppercase border border-indigo-100">{ev.distance}m {ev.stroke}</span> : null;
                           })}
                         </div>
@@ -1244,21 +1244,21 @@ export const App: React.FC = () => {
                   <div className="flex-grow grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Spécialité</label>
-                      <select value={seedingFilterStroke} onChange={e => setSeedingFilterStroke(e.target.value)} className="w-full px-4 py-3.5 rounded-xl border bg-slate-50 font-bold outline-none focus:border-blue-500 cursor-pointer text-sm transition-colors shadow-sm">
+                      <select value={seedingFilterStroke} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSeedingFilterStroke(e.target.value)} className="w-full px-4 py-3.5 rounded-xl border bg-slate-50 font-bold outline-none focus:border-blue-500 cursor-pointer text-sm transition-colors shadow-sm">
                         <option value="Tous">Toutes Nages</option>
-                        {STROKES.map(s => <option key={s} value={s}>{s}</option>)}
+                        {STROKES.map((s: string) => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Catégorie</label>
-                      <select value={seedingFilterCategory} onChange={e => setSeedingFilterCategory(e.target.value)} className="w-full px-4 py-3.5 rounded-xl border bg-slate-50 font-bold outline-none focus:border-blue-500 cursor-pointer text-sm transition-colors shadow-sm">
+                      <select value={seedingFilterCategory} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSeedingFilterCategory(e.target.value)} className="w-full px-4 py-3.5 rounded-xl border bg-slate-50 font-bold outline-none focus:border-blue-500 cursor-pointer text-sm transition-colors shadow-sm">
                         <option value="Tous">Toutes Catégories</option>
-                        {CATEGORY_ORDER.map(c => <option key={c} value={c}>{c}</option>)}
+                        {CATEGORY_ORDER.map((c: string) => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Genre</label>
-                      <select value={seedingFilterGender} onChange={e => setSeedingFilterGender(e.target.value)} className="w-full px-4 py-3.5 rounded-xl border bg-slate-50 font-bold outline-none focus:border-blue-500 cursor-pointer text-sm transition-colors shadow-sm">
+                      <select value={seedingFilterGender} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSeedingFilterGender(e.target.value)} className="w-full px-4 py-3.5 rounded-xl border bg-slate-50 font-bold outline-none focus:border-blue-500 cursor-pointer text-sm transition-colors shadow-sm">
                         <option value="Tous">Tous Genres</option>
                         <option value="M">Messieurs</option>
                         <option value="F">Dames</option>
